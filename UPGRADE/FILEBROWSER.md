@@ -47,6 +47,7 @@ Nível do SO (Linux): Configuração do iptables para aceitar conexões TCP na p
 
 Nível da Nuvem (Oracle VCN): Configuração da Ingress Rule na Security List da VCN, permitindo tráfego 0.0.0.0/0 na porta de destino 8080.
 
+
 ⚡ Desafios e Soluções (Troubleshooting)
 Durante o projeto, enfrentei e resolvi problemas técnicos reais:
 Problema
@@ -56,15 +57,19 @@ O site não carregava mesmo com o serviço rodando. Identifiquei que havia uma r
 Solução aplicada 
 Forcei a inserção da regra de liberação no topo da cadeia do IPTables (sudo iptables -I INPUT 1 ...) e corrigi a Ingress Rule no painel da Oracle.                               
 
+
 Erro 500 (Permissão)
 Ao tentar upload, o servidor retornava "Internal Server Error". A análise de logs mostrou que o app estava tentando escrever na raiz do sistema (/), onde o usuário ubuntu não tem permissão.
 Solução aplicada
 Isolei o ambiente criando um diretório dedicado (/home/ubuntu/MeusArquivos) e reconfigurei o escopo do FileBrowser para atuar apenas dentro deste diretório (config set --root).                               
 
+
 Serviço Caindo                               
 O app fechava ao encerrar a sessão SSH.                               
 Solução aplicada                               
 Implementação de serviço via systemd para execução em background e reinício automático.
+
+
 
 📚 Aprendizados
 Este projeto reforçou conhecimentos em:
