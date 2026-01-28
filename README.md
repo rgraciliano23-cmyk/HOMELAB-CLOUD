@@ -61,9 +61,6 @@ A instância utiliza o shape **Micro**, ideal para estudos e serviços leves den
 
 ## 🐧 Sistema Operacional & Storage
 
-**📸 Screenshot do Terminal:**
-![Terminal Preview](./terminal-screenshot.png)
-
 ### Storage
 * **Boot Volume:** OCI Block Volume.
 * **Persistência:** Todos os dados persistem via Block Storage (criptografado em trânsito ✅).
