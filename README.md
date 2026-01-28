@@ -1,119 +1,119 @@
-☁️ Homelab Cloud – Oracle Infrastructure
+# ☁️ Homelab Cloud – Oracle Infrastructure
 
-Homelab em nuvem provisionado na Oracle Cloud Infrastructure (OCI) utilizando o Free Tier, com foco em infraestrutura, automação, redes e serviços self-hosted, operando sem camada de virtualização adicional (ex: Proxmox).
+![Oracle Cloud](https://img.shields.io/badge/Provider-Oracle_Cloud-red?style=for-the-badge&logo=oracle)
+![Ubuntu](https://img.shields.io/badge/OS-Ubuntu_20.04-orange?style=for-the-badge&logo=ubuntu)
+![Infrastructure](https://img.shields.io/badge/Type-IaaS-blue?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Online-success?style=for-the-badge)
 
-Este repositório documenta decisões arquiteturais, parâmetros de infraestrutura e procedimentos operacionais do ambiente.
+> **Resumo:** Homelab em nuvem provisionado na Oracle Cloud Infrastructure (OCI) utilizando o Free Tier, com foco em infraestrutura, automação, redes e serviços self-hosted, operando sem camada de virtualização adicional.
 
-🧭 Arquitetura Geral
-Modelo: Single-node cloud homelab
-Tipo: IaaS (OCI Compute)
-Provisionamento: Manual / futuro IaC
-Virtualização: OCI Hypervisor (Paravirtualized)
-Orquestração: Não aplicável (bare VM)
-Gerenciamento: SSH + CLI
+---
 
-🌎 Localização e Domínios OCI
+## 🧭 Visão Geral da Arquitetura
+
+Este ambiente segue o modelo **Single-node cloud homelab**, operando diretamente sobre IaaS (Infrastructure as a Service).
+
+### Topologia de Rede (Diagrama)
+
+graph TD
+    User((👨‍💻 Admin)) -->|SSH / HTTP| Internet
+    subgraph OCI [Oracle Cloud - sa-saopaulo-1]
+        subgraph VCN [VCN-2026]
+            FW[🛡️ Security List / Firewall]
+            subgraph Public_Subnet [Subnet Pública]
+                VM[🖥️ VM Ubuntu Micro]
+                Storage[(💾 Block Storage)]
+            end
+        end
+    end
+    Internet --> FW
+    FW --> VM
+    VM <--> Storage
+
+
+Componente	Detalhe
+Modelo	Single-node cloud homelab
+Tipo	IaaS (OCI Compute)
+Virtualização	OCI Hypervisor (Paravirtualized)
+Gerenciamento	SSH + CLI
+
+
+🌎 Localização e Recursos OCI
 Parâmetro	Valor
 Região	sa-saopaulo-1
 Availability Domain	AD-1
 Fault Domain	FD-3
-Capacidade	On-Demand
-Compartimento (root)
+Compartimento	Root
 
-🖥️ Compute
-Shape
-Campo	Valor
+
+🖥️ Especificações de Compute
+A instância utiliza o shape Micro, ideal para estudos e serviços leves dentro do nível gratuito.
+Campo	Configuração
 Shape	VM.Standard.E2.1.Micro
-OCPUs	1
-Memória	1 GB
+OCPUs	1 Core
+Memória	1 GB RAM
 Network BW	0.48 Gbps
-Resize	❌ Não suportado
-Virtualização
-Item	Configuração
 Boot Mode	Paravirtualized
 Firmware	UEFI_64
-NIC	Paravirtualized
-Volume Boot	Paravirtualized
 
-💾 Storage
-Tipo	Configuração
-Boot Volume	Block Volume
-Local Disk	❌ Não disponível
-Criptografia em trânsito	✅ Ativada
+🐧 Sistema Operacional & Storage
+📸 Screenshot do Terminal:
 
-Todos os dados persistem via OCI Block Storage.
+Storage
+Boot Volume: OCI Block Volume.
 
-🐧 Sistema Operacional
-Campo	Valor
-OS	Canonical Ubuntu
-Versão	20.04 LTS
-Image	Canonical-Ubuntu-20.04-2025.07.23-0
+Persistência: Todos os dados persistem via Block Storage (criptografado em trânsito ✅).
 
-🌐 Networking
-VCN
-Campo	Valor
-VCN	vcn-2026
-Subnet	Pública
-IP Público	1xx.xxx.xxx.xxx
-NIC	1
-Modelo de Rede
+Local Disk: ❌ Não disponível (Stateless).
 
-Tráfego direto via VCN pública
-Sem Load Balancer
-Sem NAT Gateway
-Sem Bastion
+OS Build
+Distribuição: Canonical Ubuntu 20.04 LTS.
+
+Imagem: Canonical-Ubuntu-20.04-2025.07.23-0.
+
+🌐 Networking & Segurança
+A segurança é baseada em camadas, controlada primariamente pelo Firewall da VCN e secundariamente pelo IPTables do OS.
+
+Estrutura de Rede
+Campo,Valor
+VCN ID,vcn-2026
+Subnet,Pública (Internet Facing)
+IP Público,Reservado (Static/Ephemeral)
+Modelo,Tráfego direto (Sem Load Balancer/NAT Gateway)
 
 🔐 Acesso e Autenticação
+Protocolo: SSH (Porta 22).
+Autenticação: 🔑 Key-based only (Senhas desativadas).
+Bastion Host: Não utilizado.
 
-Acesso: SSH
-Autenticação: Key-based only
+🛡️ Postura de Segurança (Infra)
+Controle	Status	Observação
+Encryption in Transit	✅ Ativo	Proteção de dados Block Storage.
+Secure Boot	❌ Inativo	Limitação do Shape/Imagem.
+TPM	❌ Inativo	Limitação do Shape.
 
-🧩 Metadados da Instância
-Item	Status
-Instance Metadata Service	v1 + v2
-Live Migration	Padrão recomendado
+⚙️ Procedimentos Operacionais
+Gestão de Metadados
+A instância utiliza Instance Metadata Service (IMDS) v2 para maior segurança.
+Uso: Bootstraping e scripts de inicialização (Cloud-init).
+Live Migration: Padrão recomendado ativado.
 
-Utilizado para:
+Limitações Conhecidas ⚠️
+Recursos: Restritos ao Free Tier (1GB RAM exige gerenciamento cuidadoso de swap).
 
-Bootstrap
-Scripts de inicialização
-Automação futura
+Escalabilidade: Sem escalabilidade vertical automática.
 
-🛡️ Segurança (Infra)
-Controle	Status
-Secure Boot	❌
-Measured Boot	❌
-TPM	❌
-Encryption in Transit	✅
+Redundância: Single Point of Failure (SPOF) assumido (sem HA).
 
-Segurança será reforçada em camada de SO e rede.
+🧭 Roadmap de Evolução
+[x] Provisionamento Inicial (Compute/Net)
+[x] Acesso SSH Seguro
+[ ] Configuração de Firewall (UFW + OCI NSG)
+[ ] Hardening do Ubuntu
+[ ] Instalação Docker Engine & Compose
+[ ] Setup de Reverse Proxy (Nginx/Traefik)
+[ ] Automação de Backup Externo
+[ ] Migração para Infra as Code (Terraform)
 
-⚙️ Operação
-
-Gerenciamento via SSH
-Atualizações manuais
-Sem painel adicional
-Sem HA
-Single Point of Failure assumido
-
-📈 Limitações Conhecidas
-
-Recursos restritos (Free Tier)
-Sem escalabilidade vertical
-Sem redundância
-Dependência de IP público
-
-🧭 Roadmap de Infra
-
- Firewall (UFW / OCI NSG)
- Hardening Ubuntu
- Docker Engine
- Docker Compose
- Reverse Proxy
- Backup externo
- Monitoramento (node-level)
- Infra as Code (Terraform OCI)
-
-📄 Nota
-
-Este ambiente é experimental, focado em infraestrutura, redes e automação, e não destinado a workloads críticos.
+📄 Nota Legal
+Este ambiente é experimental, focado em estudos de infraestrutura, redes e automação. Não destinado a workloads de produção crítica.
