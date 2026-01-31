@@ -112,7 +112,7 @@ A instância utiliza **Instance Metadata Service (IMDS) v2** para maior seguran�
 
 - [x] Provisionamento Inicial (Compute/Net)
 - [x] Acesso SSH Seguro
-- [ ] Configuração de Firewall (UFW + OCI NSG)
+- [x] Configuração de Firewall (UFW + OCI NSG)
 - [ ] Hardening do Ubuntu
 - [ ] Instalação Docker Engine & Compose
 - [ ] Setup de Reverse Proxy (Nginx/Traefik)
